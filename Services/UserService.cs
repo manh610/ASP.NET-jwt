@@ -11,54 +11,73 @@ using WebApi.Models;
 
 public interface IUserService
 {
-    AuthenticateResponse Authenticate(AuthenticateRequest model);
+    Response Authenticate(AuthenticateRequest model);
     IEnumerable<AuthenticateResponse> GetAll();
-    AuthenticateResponse GetById(int id);
+    Response GetById(int id);
+    Response Register(RegisterRequest request);
 }
 
 public class UserService : IUserService
 {
-    private List<User> _users = new List<User>
-    {
-        new User { Id = 1, FirstName = "Test", LastName = "User", Username = "test", Password = "test" },
-        new User { Id = 2, FirstName = "Dang", LastName = "Manh", Username = "manh", Password = "1234" }
-    };
+    private List<User> _users = new List<User>();
 
     private readonly AppSettings _appSettings;
+
+    private UserContext userContext;
 
     public UserService(IOptions<AppSettings> appSettings)
     {
         _appSettings = appSettings.Value;
+        userContext = new UserContext();
     }
 
-    public AuthenticateResponse Authenticate(AuthenticateRequest model)
+
+    public Response Authenticate(AuthenticateRequest model)
     {
-        var user = _users.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
 
-        if (user == null) return null;
+        Response response = new Response();
 
+        var user = userContext.CheckLogin(model);
+
+        if (user == null)
+        {
+            response.message = "Username hoac password khong dung";
+            response.data = new Object();
+            return response;
+        }
         var token = generateJwtToken(user);
-
-        return new AuthenticateResponse(user, token);
+        response.data = new AuthenticateResponse(user, token);
+        response.message = "Dang nhap thanh cong";
+        return response;
     }
 
     public IEnumerable<AuthenticateResponse> GetAll()
     {
-        List<AuthenticateResponse> listUser = new List<AuthenticateResponse>();
-        foreach (User user in _users) 
+        List<AuthenticateResponse> responses = new List<AuthenticateResponse>();
+        List<User> listUser = userContext.GetAllUser();
+        foreach (User user in listUser)
         {
             var token = generateJwtToken(user);
 
-            listUser.Add(new AuthenticateResponse(user,token));
+            responses.Add(new AuthenticateResponse(user, token));
         }
-        return listUser;    
+        return responses;
     }
 
-    public AuthenticateResponse GetById(int id)
-    {   
-        User user = _users.FirstOrDefault(x => x.Id == id);
+    public Response GetById(int id)
+    {
+        Response response = new Response();
+        User user = userContext.GetUserById(id);
+        if (user == null)
+        {
+            response.data = new Object();
+            response.message = "Khong tim thay user";
+            return response;
+        }
         var token = generateJwtToken(user);
-        return new AuthenticateResponse(user,token);
+        response.data = new AuthenticateResponse(user, token);
+        response.message = "OK";
+        return response;
     }
 
 
@@ -75,4 +94,30 @@ public class UserService : IUserService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
+
+    public Response Register(RegisterRequest request)
+    {
+        Response response = new Response();
+        if (request.Password != request.ConfirmPassword)
+        {
+            response.data = new Object();
+            response.message = "Mat khau khong khop voi xac nhan mat khau";
+            return response;
+        }
+        User user = userContext.GetUserByUsername(request.Username);
+        if (user != null)
+        {
+            response.data = new Object();
+            response.message = "Username da ton tai";
+            return response;
+        }
+        userContext.Create(request);
+        User newUser = userContext.GetUserByUsername(request.Username);
+        var token = generateJwtToken(newUser);
+        response.data = new AuthenticateResponse(newUser, token);
+        response.message = "Dang ki thanh cong";
+        return response;
+    }
+
 }
+

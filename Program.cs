@@ -2,7 +2,6 @@ using WebApi.Helpers;
 using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
 {
     var services = builder.Services;
     services.AddCors();
@@ -10,10 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
     services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
-    services.AddScoped<IUserService, UserService>();
+    services.AddSingleton<IUserService, UserService>();
 
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
+
+    services.AddMvc();
 }
 
 var app = builder.Build();
@@ -38,4 +39,3 @@ app.UseHttpsRedirection();
 }
 
 app.Run();
-

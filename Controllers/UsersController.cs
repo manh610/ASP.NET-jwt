@@ -20,12 +20,16 @@ public class UsersController : ControllerBase
     public IActionResult Authenticate(AuthenticateRequest model)
     {
         var response = _userService.Authenticate(model);
-
-        if (response == null)
-            return BadRequest(new { message = "Username or password is incorrect" });
-
         return Ok(response);
     }
+
+    [HttpPost("register")]
+    public IActionResult Register( RegisterRequest request) 
+    {
+        var response = _userService.Register(request);
+        return Ok(response);
+    }
+
 
     [Authorize]
     [HttpGet]
@@ -42,3 +46,4 @@ public class UsersController : ControllerBase
     }
 
 }
+
