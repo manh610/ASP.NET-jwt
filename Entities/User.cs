@@ -9,9 +9,9 @@ public class User
     public string LastName { get; set; }
     public string Username { get; set; }
 
-    public List<Role> Role {get; set;}
+    public List<String> SystemRole {get; set;}
 
-    public List<OrgRole> orgRole {get; set;}
+    public List<String> OrgRole {get; set;}
 
     [JsonIgnore]
     public string Password { get; set; }
@@ -28,10 +28,11 @@ public class User
         this.Password = password;
     }
 
-    public string toString() {
+    public override string ToString() {
         return "{\"Id\":" + "\""+Id.ToString() + "\"" + 
                 "," + "\"FirstName\":" + "\"" + FirstName + "\"" + 
                 "," + "\"LastName\":" + "\"" + LastName + "\"" +
-                "," + "\"Username\":" + "\"" + Username + "\"}";
+                "," + "\"Username\":" + "\"" + Username + "\"}" ;
     }
+
 }

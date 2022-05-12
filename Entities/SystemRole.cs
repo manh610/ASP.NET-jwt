@@ -1,7 +1,7 @@
 namespace WebApi.Entities;
 
-public class OrgRole {
+public class SystemRole
+{
     public int Id {get; set;}
-
     public string Role {get; set;}
 }

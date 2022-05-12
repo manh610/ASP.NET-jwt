@@ -8,6 +8,9 @@ public class AuthenticateResponse
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Username { get; set; }
+
+    public List<String> OrgRoles {get; set;}
+    public List<String> SystemRoles {get; set;}
     public string Token { get; set; }
 
 
@@ -17,6 +20,8 @@ public class AuthenticateResponse
         FirstName = user.FirstName;
         LastName = user.LastName;
         Username = user.Username;
+        OrgRoles = user.OrgRole;
+        SystemRoles = user.SystemRole;
         Token = token;
     }
 }

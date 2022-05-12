@@ -6,9 +6,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebApi.Entities;
-using WebApi.Helpers;
+using WebApi.DAO;
 using WebApi.Models;
-
+using WebApi.Helpers;
 public interface IUserService
 {
     Response Authenticate(AuthenticateRequest model);
@@ -24,11 +24,19 @@ public class UserService : IUserService
     private readonly AppSettings _appSettings;
 
     private UserContext userContext;
+    private OrgRoleContext orgRoleContext;
+    private SystemRoleContext systemRoleContext;
+    private OrgRoleUserContext orgRoleUserContext;
+    private SystemRoleUserContext systemRoleUserContext;
 
     public UserService(IOptions<AppSettings> appSettings)
     {
         _appSettings = appSettings.Value;
         userContext = new UserContext();
+        orgRoleContext = new OrgRoleContext();
+        systemRoleContext = new SystemRoleContext();
+        orgRoleUserContext = new OrgRoleUserContext();
+        systemRoleUserContext = new SystemRoleUserContext();
     }
 
 
@@ -57,11 +65,35 @@ public class UserService : IUserService
         List<User> listUser = userContext.GetAllUser();
         foreach (User user in listUser)
         {
+            user.OrgRole = GetOrgRolesByUser(user);
+            user.SystemRole = GetSystemRolesByUser(user);
             var token = generateJwtToken(user);
-
             responses.Add(new AuthenticateResponse(user, token));
         }
         return responses;
+    }
+
+    private List<String> GetOrgRolesByUser(User user)
+    {
+        List<String> listOrgRole = new List<String>();
+        List<int> listId = orgRoleUserContext.GetOrgRoleByUserId(user.Id);
+        foreach (int i in listId)
+        {
+            OrgRole orgRole = orgRoleContext.GetOrgRoleById(i);
+            listOrgRole.Add(orgRole.Role);
+        }
+        return listOrgRole;
+    }
+    private List<String> GetSystemRolesByUser(User user)
+    {
+        List<String> listOrgRole = new List<String>();
+        List<int> listId = orgRoleUserContext.GetOrgRoleByUserId(user.Id);
+        foreach (int i in listId)
+        {
+            SystemRole systemRole = systemRoleContext.GetSystemRoleById(i);
+            listOrgRole.Add(systemRole.Role);
+        }
+        return listOrgRole;
     }
 
     public Response GetById(int id)
@@ -70,10 +102,13 @@ public class UserService : IUserService
         User user = userContext.GetUserById(id);
         if (user == null)
         {
+
             response.data = new Object();
             response.message = "Khong tim thay user";
             return response;
         }
+        user.OrgRole = GetOrgRolesByUser(user);
+        user.SystemRole = GetSystemRolesByUser(user);
         var token = generateJwtToken(user);
         response.data = new AuthenticateResponse(user, token);
         response.message = "OK";
@@ -87,7 +122,9 @@ public class UserService : IUserService
         var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("profile", user.toString()) }),
+            Subject = new ClaimsIdentity(new[] { new Claim("profile", user.ToString()), 
+                                            new Claim("OrgRole",string.Join(", ",user.OrgRole)),
+                                            new Claim("SysRole",string.Join(", ", user.SystemRole))}),
             Expires = DateTime.UtcNow.AddDays(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
@@ -113,6 +150,8 @@ public class UserService : IUserService
         }
         userContext.Create(request);
         User newUser = userContext.GetUserByUsername(request.Username);
+        newUser.OrgRole = GetOrgRolesByUser(newUser);
+        newUser.SystemRole = GetSystemRolesByUser(newUser);
         var token = generateJwtToken(newUser);
         response.data = new AuthenticateResponse(newUser, token);
         response.message = "Dang ki thanh cong";

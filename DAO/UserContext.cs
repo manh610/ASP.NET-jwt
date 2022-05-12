@@ -2,7 +2,7 @@ using MySql.Data.MySqlClient;
 using WebApi.Entities;
 using WebApi.Models;
 
-namespace WebApi.Helpers;
+namespace WebApi.DAO;
 public class UserContext
 {
     public string ConnectionString { get; set; }
