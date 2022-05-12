@@ -87,7 +87,7 @@ public class UserService : IUserService
     private List<String> GetSystemRolesByUser(User user)
     {
         List<String> listOrgRole = new List<String>();
-        List<int> listId = orgRoleUserContext.GetOrgRoleByUserId(user.Id);
+        List<int> listId = systemRoleUserContext.GetSystemRoleByUserId(user.Id);
         foreach (int i in listId)
         {
             SystemRole systemRole = systemRoleContext.GetSystemRoleById(i);
@@ -102,7 +102,6 @@ public class UserService : IUserService
         User user = userContext.GetUserById(id);
         if (user == null)
         {
-
             response.data = new Object();
             response.message = "Khong tim thay user";
             return response;
@@ -123,8 +122,8 @@ public class UserService : IUserService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] { new Claim("profile", user.ToString()), 
-                                            new Claim("OrgRole",string.Join(", ",user.OrgRole)),
-                                            new Claim("SysRole",string.Join(", ", user.SystemRole))}),
+                                                new Claim("OrgRoles",string.Join(", ", user.OrgRole)),
+                                                new Claim("SysRoles",string.Join(", ", user.SystemRole))}),
             Expires = DateTime.UtcNow.AddDays(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };

@@ -31,7 +31,7 @@ public class SystemRoleContext
                 {
                     string role = reader["role"].ToString();
                     systemRole.Id = id;
-                    systemRole.Role = role;
+                    systemRole.Role = role; 
                 }
                 reader.Close();
             }
