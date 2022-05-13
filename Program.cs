@@ -15,6 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddSwaggerGen();
 
     services.AddMvc();
+
+    services.Configure<RouteOptions> ( option => {
+        option.LowercaseQueryStrings = true;
+        option.LowercaseUrls = true;
+    });
 }
 
 var app = builder.Build();

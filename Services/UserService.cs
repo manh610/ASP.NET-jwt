@@ -133,7 +133,7 @@ public class UserService : IUserService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-
+    
     public Response Register(RegisterRequest request)
     {
         Response response = new Response();
