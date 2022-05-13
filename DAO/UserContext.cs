@@ -149,6 +149,7 @@ public class UserContext
                             string password = reader["password"].ToString();
                             string FirstName = reader["firstname"].ToString();
                             string LastName = reader["lastname"].ToString();
+                            user = new User(id, FirstName, LastName, username, password);
                         }
                         reader.Close();
                     }

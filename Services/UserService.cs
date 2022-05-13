@@ -45,18 +45,21 @@ public class UserService : IUserService
 
         Response response = new Response();
 
-        var user = userContext.CheckLogin(model);
+        User user = userContext.CheckLogin(model);
 
         if (user == null)
         {
             response.message = "Username hoac password khong dung";
             response.data = new Object();
             return response;
+        } else {
+            user.OrgRole = GetOrgRolesByUser(user);
+            user.SystemRole = GetSystemRolesByUser(user);
+            var token = generateJwtToken(user);
+            response.data = new AuthenticateResponse(user, token);
+            response.message = "Dang nhap thanh cong";
+            return response;
         }
-        var token = generateJwtToken(user);
-        response.data = new AuthenticateResponse(user, token);
-        response.message = "Dang nhap thanh cong";
-        return response;
     }
 
     public IEnumerable<AuthenticateResponse> GetAll()
